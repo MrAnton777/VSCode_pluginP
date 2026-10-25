@@ -2,25 +2,19 @@
   "name": "daylight-profiles",
   "displayName": "Daylight Profiles",
   "description": "Переключение профилей оформления VS Code по времени суток.",
-  "version": "0.0.1",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Other"],
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "main": "./extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
-      {
-        "command": "daylightProfiles.start",
-        "title": "Daylight Profiles: Проверить запуск"
-      },
-      {
-        "command": "daylightProfiles.toggleTheme",
-        "title": "Daylight Profiles: Переключить тему"
-      },
-      {
-        "command": "daylightProfiles.applyTimeTheme",
-        "title": "Daylight Profiles: Применить тему по времени"
-      },
       {
         "command": "daylightProfiles.startAutomatic",
         "title": "Daylight Profiles: Включить автоматический режим"
@@ -30,6 +24,30 @@
         "title": "Daylight Profiles: Остановить автоматический режим"
       },
       {
+        "command": "daylightProfiles.selectProfile",
+        "title": "Daylight Profiles: Выбрать профиль"
+      },
+      {
+        "command": "daylightProfiles.createProfile",
+        "title": "Daylight Profiles: Создать профиль"
+      },
+      {
+        "command": "daylightProfiles.editProfile",
+        "title": "Daylight Profiles: Редактировать профиль"
+      },
+      {
+        "command": "daylightProfiles.deleteProfile",
+        "title": "Daylight Profiles: Удалить профиль"
+      },
+      {
+        "command": "daylightProfiles.configureSchedule",
+        "title": "Daylight Profiles: Настроить расписание"
+      },
+      {
+        "command": "daylightProfiles.manage",
+        "title": "Daylight Profiles: Управление"
+      },
+      {
         "command": "daylightProfiles.openSettings",
         "title": "Daylight Profiles: Открыть настройки"
       }
@@ -37,6 +55,55 @@
     "configuration": {
       "title": "Daylight Profiles",
       "properties": {
+        "daylightProfiles.profiles": {
+          "type": "array",
+          "scope": "application",
+          "minItems": 1,
+          "description": "Профили оформления. Можно создавать и редактировать через команды плагина или settings.json.",
+          "default": [
+            {
+              "id": "day",
+              "name": "День",
+              "theme": "Visual Studio Light",
+              "fontSize": 14
+            },
+            {
+              "id": "night",
+              "name": "Ночь",
+              "theme": "Visual Studio Dark",
+              "fontSize": 16
+            }
+          ],
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "theme",
+              "fontSize"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "theme": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fontSize": {
+                "type": "number",
+                "minimum": 6,
+                "maximum": 100
+              }
+            },
+            "additionalProperties": false
+          }
+        },
         "daylightProfiles.dayStart": {
           "type": "integer",
           "default": 8,
@@ -52,8 +119,25 @@
           "maximum": 23,
           "scope": "application",
           "description": "Час начала ночного интервала. Должен отличаться от начала дневного."
+        },
+        "daylightProfiles.dayProfile": {
+          "type": "string",
+          "default": "day",
+          "scope": "application",
+          "minLength": 1,
+          "description": "Идентификатор дневного профиля из списка Profiles."
+        },
+        "daylightProfiles.nightProfile": {
+          "type": "string",
+          "default": "night",
+          "scope": "application",
+          "minLength": 1,
+          "description": "Идентификатор ночного профиля из списка Profiles."
         }
       }
     }
-  }
+  },
+  "extensionKind": [
+    "ui"
+  ]
 }
