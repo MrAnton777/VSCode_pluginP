@@ -39,6 +39,7 @@ function activate(context) {
     'daylightProfiles.toggleTheme',
     async () => {
       stopAutomatic();
+      await context.globalState.update('automaticEnabled', false);
       const kind = vscode.window.activeColorTheme.kind;
       const isLight = kind === vscode.ColorThemeKind.Light
         || kind === vscode.ColorThemeKind.HighContrastLight;
@@ -65,9 +66,13 @@ function activate(context) {
       }
       try {
         await applyTimeTheme();
-        if (timer) vscode.window.showInformationMessage('Автоматический режим включён.');
+        if (timer) {
+          await context.globalState.update('automaticEnabled', true);
+          vscode.window.showInformationMessage('Автоматический режим включён.');
+        }
       } catch (error) {
         stopAutomatic();
+        await context.globalState.update('automaticEnabled', false);
         vscode.window.showErrorMessage(error.message);
       }
     }
@@ -75,8 +80,9 @@ function activate(context) {
 
   const stopCommand = vscode.commands.registerCommand(
     'daylightProfiles.stopAutomatic',
-    () => {
+    async () => {
       stopAutomatic();
+      await context.globalState.update('automaticEnabled', false);
       vscode.window.showInformationMessage('Автоматический режим остановлен.');
     }
   );
@@ -88,6 +94,10 @@ function activate(context) {
 
   context.subscriptions.push(command, toggleCommand, timeCommand, autoCommand, stopCommand, settingsCommand);
   context.subscriptions.push({ dispose: stopAutomatic });
+
+  if (context.globalState.get('automaticEnabled', false)) {
+    vscode.commands.executeCommand('daylightProfiles.startAutomatic');
+  }
 }
 
 module.exports = { activate };
