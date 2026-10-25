@@ -15,6 +15,18 @@
       {
         "command": "daylightProfiles.toggleTheme",
         "title": "Daylight Profiles: Переключить тему"
+      },
+      {
+        "command": "daylightProfiles.applyTimeTheme",
+        "title": "Daylight Profiles: Применить тему по времени"
+      },
+      {
+        "command": "daylightProfiles.startAutomatic",
+        "title": "Daylight Profiles: Включить автоматический режим"
+      },
+      {
+        "command": "daylightProfiles.stopAutomatic",
+        "title": "Daylight Profiles: Остановить автоматический режим"
       }
     ]
   }
