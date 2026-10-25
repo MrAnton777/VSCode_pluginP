@@ -11,6 +11,10 @@
       {
         "command": "daylightProfiles.start",
         "title": "Daylight Profiles: Проверить запуск"
+      },
+      {
+        "command": "daylightProfiles.toggleTheme",
+        "title": "Daylight Profiles: Переключить тему"
       }
     ]
   }
