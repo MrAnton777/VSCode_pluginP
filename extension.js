@@ -1,8 +1,18 @@
 const vscode = require('vscode');
 
 async function applyTimeTheme() {
+  const config = vscode.workspace.getConfiguration('daylightProfiles');
+  const dayStart = config.get('dayStart', 8);
+  const nightStart = config.get('nightStart', 19);
+  if (!Number.isInteger(dayStart) || !Number.isInteger(nightStart)
+    || dayStart < 0 || dayStart > 23 || nightStart < 0 || nightStart > 23
+    || dayStart === nightStart) {
+    throw new Error('Начало дня и ночи: разные целые числа от 0 до 23.');
+  }
   const hour = new Date().getHours();
-  const isDay = hour >= 8 && hour < 19;
+  const isDay = dayStart < nightStart
+    ? hour >= dayStart && hour < nightStart
+    : hour >= dayStart || hour < nightStart;
   const theme = isDay ? 'Visual Studio Light' : 'Visual Studio Dark';
 
   await vscode.workspace.getConfiguration('workbench').update(
@@ -71,7 +81,12 @@ function activate(context) {
     }
   );
 
-  context.subscriptions.push(command, toggleCommand, timeCommand, autoCommand, stopCommand);
+  const settingsCommand = vscode.commands.registerCommand(
+    'daylightProfiles.openSettings',
+    () => vscode.commands.executeCommand('workbench.action.openSettings', 'daylightProfiles')
+  );
+
+  context.subscriptions.push(command, toggleCommand, timeCommand, autoCommand, stopCommand, settingsCommand);
   context.subscriptions.push({ dispose: stopAutomatic });
 }
 

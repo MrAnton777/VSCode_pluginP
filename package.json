@@ -27,7 +27,32 @@
       {
         "command": "daylightProfiles.stopAutomatic",
         "title": "Daylight Profiles: Остановить автоматический режим"
+      },
+      {
+        "command": "daylightProfiles.openSettings",
+        "title": "Daylight Profiles: Открыть настройки"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Daylight Profiles",
+      "properties": {
+        "daylightProfiles.dayStart": {
+          "type": "integer",
+          "default": 8,
+          "minimum": 0,
+          "maximum": 23,
+          "scope": "application",
+          "description": "Час начала дневного интервала. Должен отличаться от начала ночного."
+        },
+        "daylightProfiles.nightStart": {
+          "type": "integer",
+          "default": 19,
+          "minimum": 0,
+          "maximum": 23,
+          "scope": "application",
+          "description": "Час начала ночного интервала. Должен отличаться от начала дневного."
+        }
+      }
+    }
   }
 }
