@@ -1,0 +1,17 @@
+{
+  "name": "daylight-profiles",
+  "displayName": "Daylight Profiles",
+  "description": "Переключение профилей оформления VS Code по времени суток.",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "daylightProfiles.start",
+        "title": "Daylight Profiles: Проверить запуск"
+      }
+    ]
+  }
+}
