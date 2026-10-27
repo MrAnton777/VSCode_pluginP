@@ -1,8 +1,12 @@
 const vscode = require('vscode');
 const { randomUUID } = require('node:crypto');
+
 const PREFIX = 'daylightProfiles';
+
 const config = () => vscode.workspace.getConfiguration(PREFIX);
+
 const save = (key, value) => config().update(key, value, vscode.ConfigurationTarget.Global);
+
 const themes = () => [...new Set(vscode.extensions.all.flatMap(extension =>
   (extension.packageJSON.contributes?.themes || []).map(theme => theme.id || theme.label)))].sort();
 
@@ -16,6 +20,7 @@ function profiles() {
   if (new Set(list.map(p => p.id)).size !== list.length) throw new Error('Идентификаторы должны быть уникальными.');
   return list;
 }
+
 function timeProfile() {
   const start = config().get('dayStart', 8), end = config().get('nightStart', 19);
   if (![start, end].every(h => Number.isInteger(h) && h >= 0 && h <= 23) || start === end) throw new Error('Задайте разные целые часы от 0 до 23.');
@@ -25,21 +30,25 @@ function timeProfile() {
   if (!['day', 'night'].every(key => list.some(p => p.id === config().get(key + 'Profile', key)))) throw new Error('Проверьте профили расписания.');
   return list.find(p => p.id === config().get(day ? 'dayProfile' : 'nightProfile', day ? 'day' : 'night'));
 }
+
 async function choose(title) {
   const item = await vscode.window.showQuickPick(profiles().map(p => ({ label: p.name, description: `${p.theme}, ${p.fontSize}`, profile: p })), { title });
   return item?.profile;
 }
+
 function activate(context) {
   const state = context.globalState;
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   status.command = PREFIX + '.selectProfile';
   status.tooltip = 'Выбрать профиль. Ручной выбор действует до включения автоматики.';
   status.show();
+
   let last = '';
   let lastError = '';
   let disposed = false;
   let pending = false;
   let queue = Promise.resolve();
+
   function run(action) {
     queue = queue.then(async () => {
       if (disposed) return;
@@ -53,6 +62,7 @@ function activate(context) {
     });
     return queue;
   }
+
   async function apply(p, force = false) {
     if (!p) throw new Error('Профиль удалён. Выберите другой или включите авто.');
     if (!themes().includes(p.theme)) throw new Error(`Тема «${p.theme}» не установлена.`);
@@ -63,6 +73,7 @@ function activate(context) {
       last = JSON.stringify(p);
     }
   }
+
   async function refresh() {
     status.tooltip = 'Выбрать профиль. Ручной выбор действует до включения автоматики.';
     const id = state.get('manualProfileId'), auto = state.get('automaticEnabled', false);
@@ -71,24 +82,29 @@ function activate(context) {
     await apply(p);
     status.text = `$(color-mode) ${p.name} · ${id ? 'вручную' : 'авто'}`;
   }
+
   async function select(p, auto = false) {
     await apply(p, true);
     await state.update('automaticEnabled', auto);
     await state.update('manualProfileId', auto ? undefined : p.id);
     await refresh();
   }
+
   async function edit(existing) {
     const name = await vscode.window.showInputBox({ title: 'Название', value: existing?.name || '', validateInput: s => s.trim() ? undefined : 'Введите название.' });
     if (name === undefined) return;
     const theme = await vscode.window.showQuickPick(themes(), { title: 'Тема' });
     if (theme === undefined) return;
-    const size = await vscode.window.showInputBox({ title: 'Размер шрифта', value: String(existing?.fontSize ?? 14),
-      validateInput: s => s.trim() && Number.isFinite(+s) && +s >= 6 && +s <= 100 ? undefined : 'Введите число от 6 до 100.' });
+    const size = await vscode.window.showInputBox({
+      title: 'Размер шрифта', value: String(existing?.fontSize ?? 14),
+      validateInput: s => s.trim() && Number.isFinite(+s) && +s >= 6 && +s <= 100 ? undefined : 'Введите число от 6 до 100.'
+    });
     if (size === undefined) return;
     const p = { id: existing?.id || randomUUID(), name: name.trim(), theme, fontSize: +size };
     await save('profiles', existing ? profiles().map(item => item.id === p.id ? p : item) : [...profiles(), p]);
     await refresh();
   }
+
   const actions = {
     selectProfile: async () => { const p = await choose('Ручной профиль'); if (p) await select(p); },
     startAutomatic: () => select(timeProfile(), true),
@@ -113,18 +129,24 @@ function activate(context) {
       if (item) await actions[item.id]();
     }
   };
+
   for (const [name, action] of Object.entries(actions)) {
     context.subscriptions.push(vscode.commands.registerCommand(PREFIX + '.' + name, () => run(action)));
   }
+
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
     if (event.affectsConfiguration(PREFIX) || event.affectsConfiguration('window.autoDetectColorScheme')) void run(refresh);
   }));
+
   const timer = setInterval(() => {
     if (pending || disposed) return;
     pending = true;
     void run(refresh).finally(() => { pending = false; });
   }, 30_000);
+
   context.subscriptions.push(status, { dispose: () => { disposed = true; clearInterval(timer); } });
+
   void run(refresh);
 }
+
 module.exports = { activate };
